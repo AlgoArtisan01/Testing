@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 
-// Increase timeout to 30 seconds
-export const config = {
-  maxDuration: 60,
-};
+// Use Route Segment Config options
+export const dynamic = 'force-dynamic'; // Force dynamic rendering
+export const maxDuration = 30; // Set timeout to 30 seconds
 
 export const POST = async (request: Request) => {
   const { question } = await request.json();
 
   try {
     const API_KEY = process.env.GEMINI_API_KEY;
+    if (!API_KEY) {
+      throw new Error("Gemini API key is missing.");
+    }
+
     const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
 
     const response = await fetch(API_URL, {
@@ -32,7 +35,8 @@ export const POST = async (request: Request) => {
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      const errorText = await response.text(); // Read the response as text
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
@@ -40,6 +44,7 @@ export const POST = async (request: Request) => {
 
     return NextResponse.json({ reply });
   } catch (error: any) {
+    console.error("Error in /api/chatgpt:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 };
