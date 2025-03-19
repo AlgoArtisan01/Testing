@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+// Increase timeout to 30 seconds
+export const config = {
+  maxDuration: 60,
+};
+
 export const POST = async (request: Request) => {
   const { question } = await request.json();
 
